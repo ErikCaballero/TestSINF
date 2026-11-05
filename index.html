@@ -7,7 +7,7 @@
 <style>
 :root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
 --bg:#f5f6fa;--card:#fff;--text:#1b1f2a;--muted:#667085;--line:#dfe3ec;--accent:#1f5fd6;--ok:#1a8f4c;--okbg:#e4f6ec;--ko:#c8302f;--kobg:#fdebea}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){color-scheme:dark;--bg:#12141a;--card:#1c1f28;--text:#eef0f6;--muted:#9aa3b5;--line:#2e3340;--accent:#6f9bff;--ok:#4cd38a;--okbg:#17332500;--ko:#ff7b78;--kobg:#3a1b1b}}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){color-scheme:dark;--bg:#12141a;--card:#1c1f28;--text:#eef0f6;--muted:#9aa3b5;--line:#2e3340;--accent:#6f9bff;--ok:#4cd38a;--okbg:#173325;--ko:#ff7b78;--kobg:#3a1b1b}}
 :root[data-theme="dark"]{color-scheme:dark;--bg:#12141a;--card:#1c1f28;--text:#eef0f6;--muted:#9aa3b5;--line:#2e3340;--accent:#6f9bff;--ok:#4cd38a;--okbg:#173325;--ko:#ff7b78;--kobg:#3a1b1b}
 *{box-sizing:border-box}
 html{scroll-padding-top:env(safe-area-inset-top,0px)}
@@ -40,6 +40,10 @@ select{padding:8px 10px;border-radius:8px;border:1px solid var(--line);backgroun
 .rev{padding:12px 0;border-bottom:1px solid var(--line);font-size:.95rem}
 .rev b{display:block}
 .good{color:var(--ok)}
+input{font:1rem ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;width:100%;padding:10px 12px;border-radius:10px;border:1.5px solid var(--line);background:var(--card);color:var(--text)}
+input.ok{border-color:var(--ok);background:var(--okbg)}
+input.ko{border-color:var(--ko);background:var(--kobg)}
+.cv{border-color:var(--accent)}
 </style>
 </head>
 <body>
@@ -288,11 +292,12 @@ function home(){
   <div class="row"><label>Preguntas:
   <select id="n">${[10,20,40,RAW.length].map(v=>`<option value="${v}" ${v==count?"selected":""}>${v==RAW.length?"Todas ("+v+")":v}</option>`).join("")}</select></label>
   <button class="btn" id="go">Empezar</button></div></div>
-  <p class="sub">${RAW.length} preguntas disponibles. El orden de preguntas y respuestas es aleatorio.</p>`;
+  <p class="sub">${RAW.length} preguntas disponibles. El orden de preguntas y respuestas es aleatorio.</p>
+  <div class="card cv"><b>Conversión de bases</b><p class="sub" style="margin:6px 0 12px">Te damos un número en binario, decimal o hexadecimal y tienes que pasarlo a las otras dos bases.</p><button class="btn" id="cv">Practicar conversiones</button></div>`;
   document.querySelectorAll(".chip").forEach(c=>c.onclick=()=>{const k=+c.dataset.k;sel.has(k)?sel.delete(k):sel.add(k);home()});
   $("#n").onchange=e=>count=+e.target.value;
   $("#go").disabled=!sel.size;
-  $("#go").onclick=start;
+  $("#go").onclick=start;$("#cv").onclick=convHome;
 }
 function start(){
   pool=shuffle(RAW.filter(q=>sel.has(q.t))).slice(0,count);
@@ -324,6 +329,51 @@ function end(){
   ${wrong.length?`<div class="card"><b>Para repasar</b>${wrong.map(q=>`<div class="rev">${q.q}<b class="good">${q.c}</b><small>${q.e}</small></div>`).join("")}</div>`:""}
   <div class="row"><button class="btn" id="re">Repetir</button><button class="btn sec" id="hm">Cambiar temas</button></div>`;
   $("#re").onclick=start;$("#hm").onclick=home;
+}
+const BN={2:"binario",10:"decimal",16:"hexadecimal"};
+let cv={max:255,n:10,i:0,s:0,cur:null};
+const rnd=n=>Math.floor(Math.random()*(n+1));
+const fm=(v,b)=>{let s=v.toString(b).toUpperCase();if(b==2){while(s.length%4)s="0"+s;s=s.match(/.{1,4}/g).join(" ")}return s};
+function convHome(){
+  app.innerHTML=`<div class="card"><b>Conversión de bases</b><p class="sub">Pasa el número a las otras dos bases. Puedes escribir el binario con o sin espacios.</p>
+  <div class="row"><label>Nivel: <select id="lv"><option value="15">Fácil (0–15)</option><option value="255" selected>Medio (0–255)</option><option value="65535">Difícil (0–65535)</option></select></label>
+  <label>Ejercicios: <select id="cn"><option>10</option><option>20</option><option>30</option></select></label></div>
+  <div class="row" style="margin-top:14px"><button class="btn" id="cs">Empezar</button><button class="btn sec" id="cb">Volver</button></div></div>
+  <div class="card"><b>Chuleta</b><p class="sub" style="margin:6px 0 0">Hex: A=10, B=11, C=12, D=13, E=14, F=15. Pesos binarios: 128, 64, 32, 16, 8, 4, 2, 1. Cada dígito hexadecimal equivale a 4 bits.</p></div>`;
+  $("#cb").onclick=home;
+  $("#cs").onclick=()=>{cv={max:+$("#lv").value,n:+$("#cn").value,i:0,s:0,cur:null};convNext()};
+}
+function convNext(){
+  const v=1+rnd(cv.max-1), b=[2,10,16][rnd(2)], tg=[2,10,16].filter(x=>x!=b);
+  cv.cur={v,b,tg};
+  app.innerHTML=`<div class="card"><div class="meta"><span>Ejercicio ${cv.i+1} de ${cv.n}</span><span>Aciertos: ${cv.s}</span></div>
+  <div class="bar"><i style="width:${cv.i/cv.n*100}%"></i></div>
+  <div class="q">${fm(v,b)} <small style="color:var(--muted)">(${BN[b]})</small></div>
+  ${tg.map((x,k)=>`<p style="margin:10px 0 4px">Pásalo a ${BN[x]}:</p><input id="t${k}" autocomplete="off" autocapitalize="off" spellcheck="false">`).join("")}
+  <div id="fb" style="margin-top:14px"><button class="btn" id="ck">Comprobar</button></div></div>`;
+  $("#t0").focus();
+  $("#ck").onclick=convCheck;
+  app.onkeydown=e=>{if(e.key=="Enter"&&e.target.tagName=="INPUT"&&$("#ck"))$("#ck").click()};
+}
+function convCheck(){
+  const c=cv.cur;let all=true;
+  c.tg.forEach((x,k)=>{
+    const el=$("#t"+k), t=el.value.toLowerCase().replace(/\s/g,"").replace(/^0[xb]/,"");
+    const re={2:/^[01]+$/,10:/^\d+$/,16:/^[0-9a-f]+$/}[x];
+    const ok=re.test(t)&&parseInt(t,x)===c.v;
+    el.classList.add(ok?"ok":"ko");el.disabled=true;if(!ok)all=false;
+  });
+  if(all)cv.s++;
+  cv.i++;const last=cv.i==cv.n;
+  $("#fb").innerHTML=`<div class="exp"><b>${all?"¡Correcto!":"Revisa:"}</b> ${fm(c.v,2)} (bin) = ${c.v} (dec) = ${c.v.toString(16).toUpperCase()} (hex)</div><button class="btn" id="nx">${last?"Ver resultado":"Siguiente"}</button>`;
+  $("#nx").onclick=()=>last?convEnd():convNext();
+  $("#nx").focus();
+}
+function convEnd(){
+  const p=Math.round(cv.s/cv.n*100);
+  app.innerHTML=`<div class="card"><p class="big ${p>=50?"good":""}">${cv.s}/${cv.n}</p><p>${p}% de aciertos · ${p>=90?"¡Dominas las conversiones!":p>=60?"Bien, sigue practicando.":"Repasa los pesos binarios y la tabla hexadecimal."}</p></div>
+  <div class="row"><button class="btn" id="re">Repetir</button><button class="btn sec" id="hm">Volver al inicio</button></div>`;
+  $("#re").onclick=()=>{cv.i=0;cv.s=0;convNext()};$("#hm").onclick=home;
 }
 home();
 </script>
