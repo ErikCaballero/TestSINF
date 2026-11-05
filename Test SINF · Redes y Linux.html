@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Test SINF · Redes y Linux</title>
+<style>
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+--bg:#f5f6fa;--card:#fff;--text:#1b1f2a;--muted:#667085;--line:#dfe3ec;--accent:#1f5fd6;--ok:#1a8f4c;--okbg:#e4f6ec;--ko:#c8302f;--kobg:#fdebea}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){color-scheme:dark;--bg:#12141a;--card:#1c1f28;--text:#eef0f6;--muted:#9aa3b5;--line:#2e3340;--accent:#6f9bff;--ok:#4cd38a;--okbg:#17332500;--ko:#ff7b78;--kobg:#3a1b1b}}
+:root[data-theme="dark"]{color-scheme:dark;--bg:#12141a;--card:#1c1f28;--text:#eef0f6;--muted:#9aa3b5;--line:#2e3340;--accent:#6f9bff;--ok:#4cd38a;--okbg:#173325;--ko:#ff7b78;--kobg:#3a1b1b}
+*{box-sizing:border-box}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+main{max-width:720px;margin:0 auto;padding:20px 16px 40px}
+h1{font-size:1.6rem;margin:.2em 0}
+.sub{color:var(--muted);margin:0 0 20px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:20px;margin-bottom:16px}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0 16px}
+.chip{border:1px solid var(--line);border-radius:999px;padding:6px 12px;cursor:pointer;user-select:none;font-size:.9rem;background:var(--bg)}
+.chip.on{background:var(--accent);border-color:var(--accent);color:#fff}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+select,button{font:inherit}
+select{padding:8px 10px;border-radius:8px;border:1px solid var(--line);background:var(--card);color:var(--text)}
+.btn{background:var(--accent);color:#fff;border:0;border-radius:10px;padding:11px 20px;cursor:pointer;font-weight:600}
+.btn.sec{background:transparent;color:var(--accent);border:1px solid var(--accent)}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.bar{height:8px;background:var(--line);border-radius:99px;overflow:hidden;margin-bottom:14px}
+.bar i{display:block;height:100%;background:var(--accent);transition:width .3s}
+.meta{display:flex;justify-content:space-between;color:var(--muted);font-size:.85rem;margin-bottom:6px}
+.q{font-size:1.15rem;font-weight:600;margin:6px 0 16px}
+.opt{display:block;width:100%;text-align:left;background:var(--card);color:var(--text);border:1.5px solid var(--line);border-radius:10px;padding:12px 14px;margin-bottom:10px;cursor:pointer}
+.opt:hover:not(:disabled){border-color:var(--accent)}
+.opt.ok{border-color:var(--ok);background:var(--okbg)}
+.opt.ko{border-color:var(--ko);background:var(--kobg)}
+.opt:disabled{cursor:default;color:var(--text)}
+.exp{margin:14px 0;padding:12px 14px;border-radius:10px;background:var(--bg);border-left:4px solid var(--accent);font-size:.95rem}
+.big{font-size:2.6rem;font-weight:700;margin:0}
+.tb{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--line);font-size:.95rem}
+.rev{padding:12px 0;border-bottom:1px solid var(--line);font-size:.95rem}
+.rev b{display:block}
+.good{color:var(--ok)}
+</style>
+</head>
+<body>
+<main>
+<h1>Test SINF · Redes y Linux</h1>
+<p class="sub">Sistemas Informáticos · DAW</p>
+<div id="app"></div>
+</main>
+<script>
+const T=["Redes: introducción","Topologías y Wi-Fi","Direccionamiento IP","Routers y comandos","Linux: primeros pasos","Linux: buscar y filtrar","Linux: administración","Linux: usuarios y permisos"];
+// [tema, pregunta, correcta, [incorrectas], explicación]
+const RAW=[
+[0,"¿Qué elemento de un sistema de comunicación son las reglas que gobiernan la comunicación?","El protocolo",["El medio","El mensaje","El receptor"],"El protocolo define las reglas; el medio es el canal físico de transmisión."],
+[0,"¿Qué tipo de señales emplean los sistemas digitales?","Señales discretas (0s y 1s)",["Señales continuas que varían en amplitud","Solo ondas de radio AM/FM","Una mezcla de analógico y digital"],"Las señales discretas dan más precisión y resistencia al ruido."],
+[0,"¿En qué capa del modelo OSI se realiza el enrutamiento y el direccionamiento lógico (IP)?","Capa 3: Red",["Capa 2: Enlace de datos","Capa 4: Transporte","Capa 7: Aplicación"],"IP trabaja en la capa de red, igual que los routers."],
+[0,"¿Cuántas capas tiene el modelo TCP/IP, frente a las 7 de OSI?","4",["3","5","6"],"Aplicación, Transporte, Internet y Acceso a red."],
+[0,"¿Qué protocolos pertenecen a la capa de transporte?","TCP y UDP",["HTTP y FTP","IP e ICMP","Ethernet y PPP"],"HTTP/FTP son de aplicación; IP/ICMP de Internet; Ethernet/PPP de acceso a red."],
+[1,"¿Qué topología conecta todos los nodos a un dispositivo central y depende de él?","Estrella",["Bus","Anillo","Malla"],"Facilita la administración, pero si falla el nodo central cae la red."],
+[1,"¿Cuál es la principal desventaja de la topología en malla?","Es compleja y costosa",["Un solo fallo la deja inutilizada","Tiene poca redundancia","Todos comparten un único cable"],"Ofrece alta redundancia y tolerancia a fallos, pero requiere muchas conexiones."],
+[1,"¿En qué capa OSI opera un switch y qué tabla crea?","Capa 2; tabla de direcciones MAC",["Capa 3; tabla de enrutamiento","Capa 1; tabla ARP","Capa 4; tabla de puertos"],"Los switches conectan dispositivos de una misma red usando direcciones MAC."],
+[1,"¿Cuál es el protocolo de seguridad Wi-Fi más reciente y seguro?","WPA3",["WEP","WPA2","Filtrado de MAC"],"WEP está obsoleto, WPA2 es el más usado y WPA3 el más reciente."],
+[1,"¿A qué generación Wi-Fi corresponde el estándar 802.11ax?","Wi-Fi 6",["Wi-Fi 4","Wi-Fi 5","Wi-Fi 7"],"802.11n = Wi-Fi 4, ac = 5, ax = 6, be = 7."],
+[2,"¿Cuántos bits tiene una dirección IPv4 y qué valores puede tomar cada octeto?","32 bits; de 0 a 255",["32 bits; de 0 a 256","128 bits; de 0 a 255","16 bits; de 0 a 255"],"Cuatro octetos de 8 bits separados por puntos."],
+[2,"¿Qué rango y máscara tiene la clase C?","192.0.0.0–223.255.255.255 con 255.255.255.0 (/24)",["128.0.0.0–191.255.255.255 con /16","1.0.0.0–126.255.255.255 con /8","224.0.0.0–239.255.255.255 con /24"],"La clase C empieza por los bits 110 y admite 254 hosts por red."],
+[2,"En la red 192.168.1.0/24, ¿cuál es la dirección de broadcast?","192.168.1.255",["192.168.1.0","192.168.1.1","192.168.0.255"],"En broadcast todos los bits de host valen 1; en la dirección de red valen 0."],
+[2,"¿Cuál de estas direcciones NO es privada?","172.32.0.1",["10.20.30.40","172.16.5.4","192.168.100.7"],"El rango privado de clase B va de 172.16.0.0 a 172.31.255.255."],
+[2,"Para dividir 192.168.1.0/24 en 4 subredes, ¿qué máscara se usa?","255.255.255.192 (/26)",["255.255.255.128 (/25)","255.255.255.224 (/27)","255.255.192.0 (/18)"],"Se prestan 2 bits de host: 2² = 4 subredes."],
+[3,"¿Qué comando muestra la ruta que siguen los paquetes hacia un destino?","tracert",["ping","netstat","ipconfig"],"ping comprueba conectividad; tracert muestra los saltos."],
+[3,"¿Qué comando consulta servidores DNS para obtener registros de dominio?","nslookup",["arp","route","netsh"],"nslookup resuelve nombres de dominio."],
+[3,"¿Qué hace arp -a?","Muestra la asociación entre direcciones IP y MAC",["Muestra la tabla de enrutamiento","Envía paquetes ICMP","Lista las conexiones de red activas"],"La tabla de enrutamiento se ve con route; las conexiones con netstat."],
+[3,"¿Cuál NO es un dato que contenga una tabla de enrutamiento?","La dirección MAC del cliente",["Máscara de subred","Gateway o siguiente salto","Métrica (coste de la ruta)"],"Contiene red de destino, máscara, siguiente salto, interfaz de salida y métrica."],
+[3,"¿Qué tipo de router conecta la red interna con Internet y aplica políticas de seguridad?","Router de borde",["Router core","Router de distribución","Switch de capa 2"],"Los core forman la columna vertebral de grandes redes."],
+[4,"¿Qué hace ls -a?","Muestra también los archivos ocultos",["Lista en formato largo","Muestra el directorio actual","Lista de forma recursiva"],"ls -l es formato largo y ls -R recursivo."],
+[4,"¿Qué hace cd ..?","Sube al directorio padre",["Va al directorio personal","Va a la raíz /","Muestra el directorio actual"],"cd ~ va al directorio personal; cd / a la raíz."],
+[4,"¿Por qué falla rmdir backup si el directorio contiene archivos?","Porque rmdir solo elimina directorios vacíos",["Porque hace falta sudo","Porque backup es un archivo oculto","Porque rmdir solo borra archivos"],"Hay que eliminar primero el contenido."],
+[4,"¿Qué diferencia hay entre > y >>?","> sobrescribe el archivo y >> añade al final",[">> sobrescribe y > añade al final","Ninguna, son equivalentes","> crea directorios y >> crea archivos"],"> puede destruir el contenido previo."],
+[4,"¿Qué comando permite renombrar un archivo?","mv",["cp","touch","cat"],"mv mueve o renombra; cp copia."],
+[5,"¿Qué comando muestra las 4 últimas líneas de servidor.log?","tail -n 4 servidor.log",["head -n 4 servidor.log","wc -l servidor.log","grep 4 servidor.log"],"head muestra el inicio; tail el final."],
+[5,"¿Cómo se cuentan las líneas con INFO combinando comandos?","grep INFO servidor.log | wc -l",["wc -l | grep INFO","grep -v INFO servidor.log","find INFO | sort"],"La tubería pasa la salida de grep a wc -l."],
+[5,"¿Qué hace grep -i info servidor.log?","Busca info sin distinguir mayúsculas de minúsculas",["Muestra solo la primera coincidencia","Invierte la búsqueda","Muestra el número de línea"],"-n muestra el número de línea y -v invierte la búsqueda."],
+[5,"¿Qué comando busca desde proyecto todos los archivos que terminan en .js?","find proyecto -name \"*.js\"",["grep proyecto *.js","ls -js proyecto","find *.js -type proyecto"],"find busca archivos y directorios; grep busca texto dentro de archivos."],
+[5,"¿Qué limitación tiene uniq?","Solo elimina repeticiones consecutivas, por eso se usa tras sort",["Solo funciona con números","Ordena alfabéticamente","Cuenta las palabras de un archivo"],"sort | uniq elimina duplicados aunque no estén seguidos."],
+[6,"¿Qué diferencia hay entre whoami e id?","whoami da solo el usuario; id añade UID, GID y grupos",["Son idénticos","id muestra los procesos del usuario","whoami muestra los grupos e id solo el nombre"],"id muestra UID, GID principal y todos los grupos."],
+[6,"En -rw-r--r-- , ¿quién puede escribir en el archivo?","Solo el propietario",["Propietario y grupo","Todos los usuarios","Nadie"],"Propietario rw-, grupo r--, otros r--."],
+[6,"¿Qué permisos representa 755?","rwxr-xr-x",["rw-r--r--","rwxrwxrwx","rwx------"],"7 = rwx (4+2+1) y 5 = r-x (4+1)."],
+[6,"¿Qué comando muestra la memoria RAM total y disponible?","free -h",["df -h","du -sh","uptime"],"df muestra disco; du, el tamaño de un directorio."],
+[6,"¿Por qué no conviene asignar 777 a todos los archivos «para que funcione»?","Cualquier usuario podría modificarlos o ejecutarlos",["Porque impide leerlos","Porque Linux lo ignora","Porque borra al propietario"],"Es un grave problema de seguridad en un servidor web."],
+[7,"¿Qué hace sudo usermod -aG webdev webadmin?","Añade webadmin al grupo webdev sin quitarle sus otros grupos",["Crea el grupo webdev","Cambia el grupo principal y borra los demás","Hace a webadmin propietario de webdev"],"-a (append) evita perder los grupos actuales."],
+[7,"¿Qué permite el permiso w sobre un directorio?","Crear y eliminar entradas",["Listar sus nombres","Entrar en él","Ejecutarlo como script"],"r lista nombres, w crea/elimina entradas y x permite entrar."],
+[7,"Tras chmod 750 /srv/proyecto-web (grupo webdev), ¿qué no puede hacer desarrollador?","Crear archivos nuevos en el directorio",["Listar su contenido","Entrar en el directorio","Leer archivos existentes"],"750 = rwxr-x---: el grupo conserva r-x pero pierde w."],
+[7,"¿Qué comando cambia propietario y grupo de un directorio y su contenido?","sudo chown -R webadmin:webdev /srv/proyecto-web",["sudo chmod -R webadmin:webdev /srv/proyecto-web","sudo adduser webadmin:webdev /srv/proyecto-web","sudo chgrp webadmin /srv/proyecto-web"],"chown cambia propietario:grupo; chmod cambia permisos."],
+[7,"Con permisos 770 en un directorio, ¿quién tiene acceso?","Propietario y grupo; los otros usuarios, ninguno",["Solo el propietario","Todos los usuarios","Grupo y otros, pero no el propietario"],"7 = rwx para propietario y grupo; 0 = nada para otros."],
+[0,"¿Qué elemento origina y transmite la información?","El emisor",["El receptor","El medio","El protocolo"],"El emisor origina el mensaje."],
+[0,"¿Qué ejemplo es un sistema de comunicación analógico?","La radio AM/FM",["Una videollamada","Un correo electrónico","Una transferencia FTP"],"Usa señales continuas."],
+[0,"¿Qué es una red informática?","Dispositivos interconectados que comparten recursos e información",["Un ordenador con varios usuarios","Un cable de fibra óptica","Un programa de mensajería"],"Siguen reglas definidas por protocolos."],
+[0,"¿Qué clasificación de redes se basa en el alcance?","LAN, MAN y WAN",["Bus, estrella y malla","Cliente-servidor y P2P","TCP, UDP e IP"],"Local, metropolitana y extensa."],
+[0,"¿Qué organización desarrolló el modelo OSI?","La ISO",["El IEEE","La IETF","Cisco"],"OSI = Open Systems Interconnection."],
+[0,"¿Qué capa OSI traduce, comprime y cifra datos?","Presentación (6)",["Sesión (5)","Aplicación (7)","Transporte (4)"],"Es la capa 6."],
+[0,"¿Qué capa OSI gestiona las sesiones entre aplicaciones?","Sesión (5)",["Presentación (6)","Red (3)","Física (1)"],"Es la capa 5."],
+[0,"¿Qué capa OSI transmite bits a través del medio físico?","Física (1)",["Enlace de datos (2)","Red (3)","Transporte (4)"],"Es la capa 1."],
+[1,"¿Qué topología comparte un único cable de comunicación?","Bus",["Estrella","Anillo","Malla"],"Simple y económica, pero vulnerable a fallos."],
+[1,"¿Qué topología forma un circuito cerrado?","Anillo",["Bus","Estrella","Malla"],"Es vulnerable a cortes."],
+[1,"¿Qué caracteriza a la conexión punto a punto?","Enlace directo entre dos nodos con ancho de banda dedicado",["Un canal compartido por varios dispositivos","Todos pasan por un nodo central","Solo funciona con Wi-Fi"],"Ideal para enlaces críticos."],
+[1,"¿Qué caracteriza al modo multipunto?","Un canal compartido por varios dispositivos",["Ancho de banda dedicado","Conexión solo entre dos nodos","Mayor coste de implementación"],"Menor coste, pero ancho de banda compartido."],
+[1,"¿Cuál es un tipo de cableado de red?","Par trenzado (UTP/STP)",["SSID","WPA2","Switch"],"También existen fibra óptica y coaxial."],
+[1,"¿Cuál es una desventaja de las redes inalámbricas?","Mayor vulnerabilidad a ataques",["Menor movilidad","Peor escalabilidad","Mayor coste de instalación"],"También menor velocidad e interferencias."],
+[1,"¿Qué es un ataque Evil Twin?","Una red falsa que imita a una legítima",["Un ataque de fuerza bruta","Un cifrado débil","Un filtrado de MAC"],"Engaña al usuario con una red falsa."],
+[1,"¿Cuál es una buena práctica de seguridad Wi-Fi?","Cambiar las contraseñas predeterminadas",["Usar WEP","Compartir la clave con todos","Desactivar el cifrado"],"WEP es obsoleto y vulnerable."],
+[2,"¿Qué es el identificador de host en una IP?","La parte que identifica al dispositivo dentro de la red",["La parte que identifica la red","La máscara de subred","La puerta de enlace"],"La IP se divide en Network ID y Host ID."],
+[2,"¿Cuál es la máscara de la clase A?","255.0.0.0 (/8)",["255.255.0.0 (/16)","255.255.255.0 (/24)","255.255.255.192 (/26)"],"Admite 16.777.214 hosts por red."],
+[2,"¿Qué clase usa el rango 224.0.0.0–239.255.255.255?","Clase D (multicast)",["Clase A","Clase C","Clase E"],"Se usa para transmisiones grupales."],
+[2,"¿Cuál es el rango privado de clase A?","10.0.0.0 a 10.255.255.255",["11.0.0.0 a 11.255.255.255","172.16.0.0 a 172.31.255.255","192.168.0.0 a 192.168.255.255"],"Es la red 10.0.0.0/8."],
+[2,"¿Qué dirección es la de loopback?","127.0.0.1",["192.168.0.1","255.255.255.255","0.0.0.0"],"Se usa para comunicación interna (localhost)."],
+[2,"En la dirección de red, ¿cómo son los bits de host?","Todos 0",["Todos 1","La mitad 0 y la mitad 1","Se ignoran"],"Ejemplo: 192.168.1.0/24."],
+[2,"¿Cuántos hosts por red admite la clase C?","254",["256","65.534","16.777.214"],"Se restan la dirección de red y la de broadcast."],
+[2,"¿Qué clase está reservada para investigación y no se usa en Internet?","Clase E",["Clase B","Clase D","Clase A"],"Sus direcciones empiezan por los bits 1111."],
+[3,"¿Qué comando verifica la conectividad enviando paquetes ICMP?","ping",["tracert","nslookup","arp"],"Ejemplo: ping 192.168.1.1."],
+[3,"¿Qué comando muestra la configuración de red del equipo en Windows?","ipconfig /all",["netstat -an","arp -a","route print"],"ipconfig muestra IP, máscara y gateway."],
+[3,"¿Qué muestra netstat -an?","Las conexiones de red activas",["La ruta hacia un destino","La caché ARP","Los registros DNS"],"La ruta se ve con tracert."],
+[3,"¿Qué comando muestra y modifica la tabla de enrutamiento local?","route",["nslookup","ping","netsh"],"route print muestra la tabla; route add añade rutas."],
+[3,"¿Qué combina un router doméstico además de enrutar?","Switch y punto de acceso Wi-Fi",["Solo un firewall","Un servidor DNS externo","Nada más"],"Está pensado para hogares y pequeñas oficinas."],
+[3,"¿Qué soportan los routers empresariales?","VPN y múltiples conexiones WAN",["Solo una conexión WAN","Solo Wi-Fi 4","Ninguna política de seguridad"],"Tienen más capacidad, interfaces y protocolos avanzados."],
+[3,"¿Qué router forma la columna vertebral de grandes redes?","Router core",["Router doméstico","Router de borde","Switch"],"Maneja grandes volúmenes de tráfico a alta velocidad."],
+[3,"¿Qué tipo de enrutamiento NO aparece entre los algoritmos vistos?","Aleatorio",["Estático","Dinámico","Híbrido"],"Se ven estático, dinámico e híbrido."],
+[4,"¿Qué comando muestra el directorio en el que te encuentras?","pwd",["whoami","hostname","uname -a"],"pwd = print working directory."],
+[4,"¿Qué muestra hostname?","El nombre del equipo",["El usuario actual","La versión del kernel","El directorio actual"],"whoami muestra el usuario."],
+[4,"¿Qué crea mkdir practica_linux?","Un directorio",["Un archivo vacío","Un enlace","Un usuario"],"touch crea archivos vacíos."],
+[4,"¿Qué hace touch documentos/apuntes.txt?","Crea un archivo vacío si no existe",["Borra el archivo","Lo copia","Lo abre en un editor"],"Crea el archivo sin contenido."],
+[4,"¿Qué hace ls -R?","Lista el contenido de forma recursiva",["Lista en orden inverso","Muestra archivos ocultos","Borra recursivamente"],"Muestra también los subdirectorios."],
+[4,"¿Qué representa / en Linux?","El directorio raíz",["El directorio personal","El directorio actual","El directorio padre"],"Es la base de todo el sistema de archivos."],
+[4,"¿Qué hace cp practicas/practica01.txt backup/?","Copia el archivo a backup",["Lo mueve","Lo renombra","Lo elimina"],"El original se conserva."],
+[4,"¿Qué comando muestra el contenido de un archivo en pantalla?","cat",["mkdir","pwd","mv"],"cat concatena y muestra archivos."],
+[5,"¿Qué comando muestra las 3 primeras líneas de servidor.log?","head -n 3 servidor.log",["tail -n 3 servidor.log","wc -l servidor.log","grep 3 servidor.log"],"head muestra el inicio."],
+[5,"¿Qué cuenta wc -l?","Las líneas",["Las palabras","Los bytes","Los archivos"],"wc -w cuenta palabras."],
+[5,"¿Qué hace grep -v ERROR servidor.log?","Muestra las líneas que NO contienen ERROR",["Solo las que contienen ERROR","Cuenta las líneas ERROR","Ordena el archivo"],"-v invierte la búsqueda."],
+[5,"¿Qué hace grep -n?","Muestra el número de línea de cada coincidencia",["Ignora mayúsculas","Invierte la búsqueda","Cuenta coincidencias"],"-i ignora mayúsculas."],
+[5,"¿Cómo guardas en errores.txt las líneas con ERROR?","grep ERROR servidor.log > errores.txt",["grep ERROR servidor.log | errores.txt","grep ERROR >> servidor.log","cat errores.txt > ERROR"],"> redirige la salida a un archivo."],
+[5,"¿Qué hace la tubería |?","Envía la salida de un comando a la entrada de otro",["Guarda la salida en un archivo","Añade texto al final de un archivo","Ejecuta en segundo plano"],"Permite encadenar comandos."],
+[5,"¿Qué comando consulta los comandos ejecutados anteriormente?","history",["find","less","sort"],"Se puede filtrar con grep."],
+[5,"¿Con qué tecla se sale de less?","q",["x","Esc dos veces","Ctrl+S"],"También se sale de top con q."],
+[6,"¿Qué muestra df -h?","El espacio en disco por partición",["La memoria RAM","Los procesos activos","El tiempo encendido"],"free -h muestra la memoria."],
+[6,"¿Qué hace du -sh ~/practica03?","Muestra cuánto ocupa el directorio",["Muestra el espacio libre del disco","Muestra la memoria libre","Elimina el directorio"],"du mide el uso de disco de archivos y directorios."],
+[6,"¿Qué muestra uptime?","Cuánto tiempo lleva encendida la máquina",["La memoria libre","Los usuarios y grupos","Los permisos de un archivo"],"También muestra la carga del sistema."],
+[6,"¿Qué hace sleep 300 &?","Lanza un proceso en segundo plano durante 300 segundos",["Apaga el equipo en 300 s","Bloquea la terminal 300 s","Elimina procesos"],"El & lo ejecuta en segundo plano."],
+[6,"¿Cómo se finaliza un proceso conociendo su PID?","kill PID",["ps PID","top PID","pgrep PID"],"pgrep solo busca procesos."],
+[6,"¿Qué hace chmod u+x publico.txt?","Da permiso de ejecución al propietario",["Quita escritura al grupo","Da lectura a otros","Cambia el propietario"],"u = propietario, +x = añadir ejecución."],
+[6,"¿Qué hace chmod go-r privado.txt?","Quita la lectura a grupo y otros",["Añade lectura a todos","Quita todo al propietario","Lo hace ejecutable"],"g = grupo, o = otros."],
+[6,"¿Qué permisos da chmod 600?","rw------- (solo el propietario lee y escribe)",["rw-r--r--","rwxr-xr-x","---rw----"],"Típico para archivos privados."],
+[7,"¿Qué hace sudo adduser webadmin?","Crea el usuario webadmin",["Crea el grupo webadmin","Cambia a webadmin","Elimina el usuario"],"Crea también su directorio en /home."],
+[7,"¿Qué hace sudo groupadd webdev?","Crea el grupo webdev",["Crea el usuario webdev","Añade un usuario a un grupo","Elimina un grupo"],"usermod -aG añade usuarios al grupo."],
+[7,"¿Qué hace su - webadmin?","Cambia a webadmin con su entorno y directorio personal",["Cierra la sesión","Crea el usuario","Da permisos de administrador"],"El guion carga el entorno del usuario."],
+[7,"¿Para qué sirve exit tras su - webadmin?","Para volver al usuario anterior",["Para borrar webadmin","Para apagar el equipo","Para cambiar la contraseña"],"Cierra la sesión de webadmin."],
+[7,"¿Qué permite el permiso x sobre un directorio?","Entrar en él y atravesarlo",["Listar sus nombres","Crear archivos","Cambiar su propietario"],"Sin x no se puede acceder a su contenido."],
+[7,"¿Por qué son útiles los grupos con varios desarrolladores?","Permiten dar los mismos permisos a todos sin compartir cuenta",["Aumentan la memoria RAM","Evitan usar permisos","Sustituyen a las contraseñas"],"Se gestionan permisos por grupo."],
+[7,"En -rw-r----- webadmin webdev index.html, ¿qué puede hacer el grupo?","Solo leer",["Leer y escribir","Nada","Ejecutar"],"Propietario rw-, grupo r--, otros ---."],
+[7,"¿Qué permisos da chmod 640?","rw-r-----",["rw-rw----","rwxr-----","r--r-----"],"6 = rw-, 4 = r--, 0 = ---."],
+[0,"¿Qué elemento es el canal físico de transmisión?","El medio",["El emisor","El mensaje","El receptor"],"Puede ser un cable u ondas."],
+[0,"¿Qué es el mensaje en un sistema de comunicación?","La información codificada para su transmisión",["El canal físico","Las reglas de comunicación","El dispositivo que recibe"],"Lo origina el emisor."],
+[0,"¿Qué aporta la escalabilidad a una red?","Crecer sin rediseñar toda la infraestructura",["Reducir el número de dispositivos","Evitar los protocolos","Eliminar el cableado"],"Es una de las ventajas de las redes."],
+[0,"¿Qué clasificación de redes distingue cliente-servidor y P2P?","Por relación funcional",["Por alcance","Por topología","Por velocidad"],"Por alcance: LAN, MAN, WAN."],
+[0,"¿Qué capa OSI incluye HTTP, SMTP y FTP?","Aplicación (7)",["Transporte (4)","Sesión (5)","Red (3)"],"Interfaz con el usuario final."],
+[0,"¿Qué capa OSI se encarga del acceso al medio y control de errores (Ethernet)?","Enlace de datos (2)",["Física (1)","Red (3)","Sesión (5)"],"Es la capa 2."],
+[0,"¿Qué diferencia hay entre OSI y TCP/IP?","OSI es un modelo teórico de 7 capas; TCP/IP es la implementación real de 4",["OSI tiene 4 capas y TCP/IP 7","TCP/IP es solo teórico","No hay diferencias"],"Ambos son complementarios."],
+[0,"¿Qué es un sistema de comunicación híbrido?","Combina tecnologías analógicas y digitales",["Solo usa señales analógicas","Solo usa señales digitales","No usa señales"],"Aprovecha las ventajas de ambos."],
+[1,"¿Qué estándar Wi-Fi alcanza hasta 46 Gbps?","Wi-Fi 7 (802.11be)",["Wi-Fi 4 (802.11n)","Wi-Fi 5 (802.11ac)","Wi-Fi 6 (802.11ax)"],"Wi-Fi 6 llega a 9,6 Gbps."],
+[1,"¿Qué frecuencia usa Wi-Fi 5 (802.11ac)?","5 GHz",["2.4 GHz","6 GHz","2.4 y 6 GHz"],"Wi-Fi 6 y 7 añaden 6 GHz."],
+[1,"¿Qué componente lógico de una red es un conjunto de reglas de comunicación?","Los protocolos",["Las direcciones IP","El cableado","Los switches"],"Ejemplos: TCP/IP, HTTP, FTP."],
+[1,"¿Cuántos bits tiene una dirección IPv6?","128",["32","64","256"],"IPv4 tiene 32 bits."],
+[1,"¿En qué consiste el filtrado de direcciones MAC?","En permitir solo dispositivos con MAC autorizadas",["En ocultar el SSID","En cifrar con WPA3","En cambiar la contraseña"],"Es una mejora de seguridad básica."],
+[1,"¿Qué dispositivo conecta diferentes redes y determina la mejor ruta?","Router",["Switch","Hub","Cable coaxial"],"El switch conecta dispositivos de una misma red."],
+[1,"¿Qué ataque intercepta la comunicación entre dos partes?","Man-in-the-middle",["Evil Twin","Fuerza bruta","Filtrado MAC"],"Es un riesgo común en redes inalámbricas."],
+[1,"¿Qué alcance interior aproximado tiene Wi-Fi 4?","70 metros",["35 metros","30 metros","240 metros"],"Bluetooth 5.0 llega a 240 m en línea de vista."],
+[2,"¿Cuántas redes privadas de clase B existen?","16",["1","256","65.536"],"De 172.16.0.0 a 172.31.0.0."],
+[2,"¿Cuántas direcciones IP tiene la red privada 10.0.0.0/8?","16.777.216",["65.536","256","254"],"2^24 direcciones."],
+[2,"¿Cuál es el rango privado de clase C?","192.168.0.0 a 192.168.255.255",["192.0.0.0 a 192.255.255.255","172.16.0.0 a 172.31.255.255","10.0.0.0 a 10.255.255.255"],"Hay 256 redes /24."],
+[2,"¿Con qué bits empieza una dirección de clase B?","10",["0","110","1110"],"Clase A: 0; C: 110; D: 1110."],
+[2,"¿Qué es una subred?","Una división lógica de una red IP en segmentos más pequeños",["Un tipo de cable","Una dirección de broadcast","Un protocolo de transporte"],"Mejora la administración y la seguridad."],
+[2,"¿De dónde se toman los bits para crear subredes?","De la porción de host",["De la porción de red","Del número de puerto","Del protocolo"],"Son bits prestados del host."],
+[2,"¿Cuántos hosts utilizables tiene cada subred /26?","62",["64","30","126"],"64 direcciones menos red y broadcast."],
+[2,"¿Cuántos bits de red indica la máscara /24?","24",["8","16","32"],"Equivale a 255.255.255.0."],
+[3,"¿Qué comando de Windows sirve para administrar y solucionar problemas de red?","netsh",["ping","arp","tracert"],"Ej.: netsh interface ip show config."],
+[3,"¿En qué capa del modelo OSI opera un router?","Capa 3 (red)",["Capa 1 (física)","Capa 2 (enlace)","Capa 4 (transporte)"],"El switch trabaja en la capa 2."],
+[3,"¿Para qué sirve nslookup www.ejemplo.com?","Para consultar registros DNS del dominio",["Para ver la ruta de paquetes","Para ver la caché ARP","Para comprobar conectividad ICMP"],"Consulta servidores DNS."],
+[3,"¿Qué es la métrica en una tabla de enrutamiento?","El coste de la ruta",["La máscara de subred","La interfaz de salida","La IP de origen"],"Sirve para elegir la mejor ruta."],
+[3,"¿Qué comando añade la ruta a 192.168.2.0/24 por el gateway 192.168.1.1?","route add 192.168.2.0 mask 255.255.255.0 192.168.1.1",["route print","arp -a 192.168.2.0","netsh add 192.168.2.0"],"route modifica la tabla local."],
+[3,"¿Cómo puede configurarse un router?","Por interfaz web, CLI o herramientas de gestión centralizadas",["Solo por interfaz web","Solo por USB","No se puede configurar"],"Se configuran IP, máscaras, gateway y servicios."],
+[3,"¿Qué protocolo utiliza ping?","ICMP",["TCP","HTTP","ARP"],"Envía paquetes ICMP."],
+[3,"¿Qué combina el enrutamiento híbrido?","Rutas estáticas y dinámicas",["Solo rutas estáticas","Solo IPv6","Ninguna ruta"],"Es el tercer algoritmo visto."],
+[4,"¿Qué hace cd ~?","Va al directorio personal",["Sube al directorio padre","Va a la raíz","Crea un directorio"],"~ representa el directorio personal."],
+[4,"¿Qué muestra ls -l?","El listado en formato largo, con permisos y tamaño",["Los archivos ocultos","Solo los directorios","El contenido de los archivos"],"ls -a muestra los ocultos."],
+[4,"¿Qué comando muestra información del sistema y del kernel?","uname -a",["hostname","whoami","pwd"],"hostname solo da el nombre del equipo."],
+[4,"¿Qué hace rm archivo.txt?","Elimina el archivo",["Lo copia","Lo renombra","Lo muestra"],"En Linux no hay papelera en la terminal."],
+[4,"¿Qué ocurre con echo 'Hola' > a.txt si a.txt ya tenía contenido?","Se sobrescribe",["Se añade al final","Se crea un duplicado","Se produce un error"],">> añadiría al final."],
+[4,"¿Qué representa ~ en la terminal?","El directorio personal del usuario",["El directorio raíz","El directorio padre","El directorio actual"],"Ej.: /home/alumno."],
+[4,"¿Qué hace mkdir -p a/b/c?","Crea la ruta completa, con los directorios intermedios",["Solo crea c","Crea un archivo","Siempre da error"],"-p crea los padres necesarios."],
+[4,"¿Qué comando muestra con qué usuario has iniciado sesión?","whoami",["hostname","pwd","ls"],"Who am I."],
+[5,"¿Qué hace el comando tail?","Muestra el final de un archivo",["Muestra el inicio","Cuenta líneas","Busca archivos"],"head muestra el inicio."],
+[5,"¿Qué hace find proyecto -type d?","Busca directorios dentro de proyecto",["Busca archivos .d","Borra directorios","Cuenta directorios"],"-type d filtra por directorios."],
+[5,"¿Cómo añades FIN DEL INFORME al final de avisos.txt sin borrar lo anterior?","echo 'FIN DEL INFORME' >> avisos.txt",["echo 'FIN DEL INFORME' > avisos.txt","cat 'FIN DEL INFORME' avisos.txt","grep 'FIN DEL INFORME' avisos.txt"],">> añade; > sobrescribe."],
+[5,"¿Para qué se utiliza less?","Para consultar un archivo navegando por él",["Para borrar líneas","Para ordenar un archivo","Para copiar archivos"],"Se sale con q."],
+[5,"¿Qué hace ls | sort?","Ordena alfabéticamente el listado",["Borra duplicados","Guarda el listado en un archivo","Cuenta los archivos"],"sort ordena la entrada recibida."],
+[5,"¿Qué hace find . -name index.html?","Busca exactamente el archivo index.html",["Busca texto index.html","Crea index.html","Elimina index.html"],"-name filtra por nombre."],
+[5,"¿Qué hace grep /login servidor.log | tail -n 2?","Muestra las 2 últimas coincidencias con /login",["Muestra las 2 primeras","Cuenta las coincidencias","Borra las 2 últimas"],"Combina grep y tail con una tubería."],
+[5,"¿Qué diferencia hay entre grep y find?","grep busca texto dentro de archivos; find busca archivos y directorios",["Son idénticos","find busca texto y grep archivos","grep solo funciona con directorios"],"Cada uno tiene su uso."],
+[6,"¿Qué hace ps aux | head?","Muestra los primeros procesos de todos los usuarios",["Elimina procesos","Muestra la memoria libre","Abre top"],"head limita la salida."],
+[6,"¿Por qué ps aux muestra procesos de otros usuarios y del sistema?","Porque aux lista los procesos de todos los usuarios",["Porque hay un error","Porque son procesos tuyos","Porque necesitas sudo"],"ps sin opciones solo muestra tu sesión."],
+[6,"¿Para qué se utiliza top?","Para ver en tiempo real CPU, memoria y procesos",["Para ver permisos","Para listar archivos","Para crear usuarios"],"Se sale con q."],
+[6,"¿Qué hace pgrep sleep?","Muestra los PID de los procesos sleep",["Crea un proceso sleep","Termina los procesos sleep","Muestra la memoria"],"Sirve para comprobar si sigue ejecutándose."],
+[6,"¿Qué permisos se asignan a un directorio web como web?","755",["777","600","000"],"rwxr-xr-x."],
+[6,"¿Qué permisos se asignan a index.html en la simulación del servidor web?","644",["777","600","755"],"rw-r--r--."],
+[6,"¿Para qué sirve sudo?","Para ejecutar comandos con privilegios de administrador",["Para cambiar de directorio","Para listar procesos","Para comprimir archivos"],"Se usa con cuidado."],
+[6,"¿Qué diferencia hay entre apt update y apt search?","update actualiza la lista de paquetes; search busca paquetes",["update instala paquetes","search elimina paquetes","No hay diferencia"],"Ninguno instala nada."],
+[7,"¿Qué muestra ls -ld /srv/proyecto-web?","Los permisos del propio directorio, no de su contenido",["El contenido del directorio","Solo archivos ocultos","El tamaño del disco"],"-d trata el directorio como un elemento."],
+[7,"¿Qué permite el permiso r sobre un directorio?","Listar los nombres",["Entrar en él","Crear archivos","Cambiar propietario"],"x permite entrar."],
+[7,"¿Para qué sirve chgrp?","Para cambiar el grupo de un archivo o directorio",["Para crear grupos","Para cambiar permisos","Para cambiar de usuario"],"chown también puede cambiarlo."],
+[7,"¿Qué hace chmod g+w publico.txt?","Añade escritura al grupo",["Quita escritura al grupo","Añade escritura a otros","Cambia el grupo"],"g = grupo."],
+[7,"¿Qué hace chmod o-r publico.txt?","Quita la lectura a otros",["Añade lectura a otros","Quita lectura al propietario","Quita todo a otros"],"o = otros."],
+[7,"¿Qué diferencia hay entre chmod 640 y chmod g-rwx,o-rwx?","640 fija los permisos exactos; el simbólico solo quita a grupo y otros",["Son siempre idénticos","640 solo afecta al grupo","El simbólico fija los del propietario"],"El simbólico depende de los permisos iniciales."],
+[7,"¿Qué muestra id anaweb?","UID, GID y grupos del usuario anaweb",["Los procesos de anaweb","El directorio de anaweb","Su contraseña"],"Sirve para comprobar pertenencia a grupos."],
+[7,"¿Qué comando lista los servicios en ejecución?","systemctl --type=service --state=running",["ps aux","ls /srv","free -h"],"Luego systemctl status NOMBRE."]
+].map(([t,q,c,w,e])=>({t,q,c,w,e}));
+
+const $=s=>document.querySelector(s), app=$("#app");
+const shuffle=a=>{a=[...a];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+let sel=new Set(T.map((_,i)=>i)), count=10, pool=[], i=0, score=0, wrong=[], byT={};
+
+function home(){
+  app.innerHTML=`<div class="card"><b>Temas</b>
+  <div class="chips">${T.map((n,k)=>`<span class="chip ${sel.has(k)?"on":""}" data-k="${k}">${n}</span>`).join("")}</div>
+  <div class="row"><label>Preguntas:
+  <select id="n">${[10,20,40,RAW.length].map(v=>`<option value="${v}" ${v==count?"selected":""}>${v==RAW.length?"Todas ("+v+")":v}</option>`).join("")}</select></label>
+  <button class="btn" id="go">Empezar</button></div></div>
+  <p class="sub">${RAW.length} preguntas disponibles. El orden de preguntas y respuestas es aleatorio.</p>`;
+  document.querySelectorAll(".chip").forEach(c=>c.onclick=()=>{const k=+c.dataset.k;sel.has(k)?sel.delete(k):sel.add(k);home()});
+  $("#n").onchange=e=>count=+e.target.value;
+  $("#go").disabled=!sel.size;
+  $("#go").onclick=start;
+}
+function start(){
+  pool=shuffle(RAW.filter(q=>sel.has(q.t))).slice(0,count);
+  i=0;score=0;wrong=[];byT={};show();
+}
+function show(){
+  const q=pool[i], opts=shuffle([q.c,...q.w]);
+  app.innerHTML=`<div class="card"><div class="meta"><span>Pregunta ${i+1} de ${pool.length}</span><span>${T[q.t]}</span></div>
+  <div class="bar"><i style="width:${i/pool.length*100}%"></i></div>
+  <div class="q">${q.q}</div>
+  ${opts.map(o=>`<button class="opt">${o}</button>`).join("")}
+  <div id="fb"></div></div>`;
+  document.querySelectorAll(".opt").forEach(b=>b.onclick=()=>answer(b,q));
+}
+function answer(b,q){
+  const ok=b.textContent===q.c, s=byT[q.t]=byT[q.t]||[0,0];
+  s[1]++; if(ok){score++;s[0]++}else wrong.push(q);
+  document.querySelectorAll(".opt").forEach(o=>{o.disabled=true;if(o.textContent===q.c)o.classList.add("ok");else if(o===b)o.classList.add("ko")});
+  const last=i==pool.length-1;
+  $("#fb").innerHTML=`<div class="exp"><b>${ok?"¡Correcto!":"Incorrecto."}</b> ${q.e}</div>
+  <button class="btn" id="nx">${last?"Ver resultado":"Siguiente"}</button>`;
+  $("#nx").onclick=()=>{i++;last?end():show()};
+}
+function end(){
+  const p=Math.round(score/pool.length*100);
+  app.innerHTML=`<div class="card"><p class="big ${p>=50?"good":""}">${score}/${pool.length}</p>
+  <p>${p}% de aciertos · ${p>=90?"¡Excelente!":p>=70?"Muy bien.":p>=50?"Aprobado, pero repasa los fallos.":"Toca repasar los apuntes."}</p>
+  ${Object.keys(byT).map(k=>`<div class="tb"><span>${T[k]}</span><b>${byT[k][0]}/${byT[k][1]}</b></div>`).join("")}</div>
+  ${wrong.length?`<div class="card"><b>Para repasar</b>${wrong.map(q=>`<div class="rev">${q.q}<b class="good">${q.c}</b><small>${q.e}</small></div>`).join("")}</div>`:""}
+  <div class="row"><button class="btn" id="re">Repetir</button><button class="btn sec" id="hm">Cambiar temas</button></div>`;
+  $("#re").onclick=start;$("#hm").onclick=home;
+}
+home();
+</script>
+</body>
+</html>
